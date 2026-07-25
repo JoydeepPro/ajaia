@@ -3,6 +3,8 @@ import { connectDB } from "@/lib/mongodb";
 import Document from "@/models/Document";
 import { requireUser } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const user = await requireUser();
   if (!user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

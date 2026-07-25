@@ -4,6 +4,8 @@ import Document from "@/models/Document";
 import { requireUser } from "@/lib/auth";
 import { accessFor } from "@/lib/access";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   if (!user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
