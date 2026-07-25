@@ -6,14 +6,13 @@ import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, List, ListOrdered, Share2, Trash2, Save, Edit3, ArrowLeft, Eye, CheckCircle2, AlertCircle } from "lucide-react";
+import { Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, List, ListOrdered, Trash2, Save, Edit3, ArrowLeft, Eye, CheckCircle2, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function Editor({ id }: { id:string }) {
   const [doc,setDoc]=useState<any>(null), [title,setTitle]=useState(""), [status,setStatus]=useState("Loading…");
-  const [shareOpen,setShareOpen]=useState(false),[shareEmail,setShareEmail]=useState(""),[permission,setPermission]=useState("edit"),[error,setError]=useState("");
+  const [error,setError]=useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   
   const router=useRouter(); const timer=useRef<any>(null); const titleRef = useRef<HTMLInputElement>(null);
   const editor=useEditor({
@@ -46,16 +45,7 @@ export default function Editor({ id }: { id:string }) {
     }catch(e:any){setStatus("Save failed");setError(e.message); toast.error(e.message);}
     finally { setIsSaving(false); }
   }
-  async function share(){
-    if (!shareEmail.trim()) return toast.error("Please enter an email address");
-    if (isSharing) return;
-    setIsSharing(true);
-    try{
-      await api(`/api/documents/${id}/share`,{method:"POST",body:JSON.stringify({email:shareEmail.trim(),permission})});
-      setShareEmail("");setShareOpen(false);setStatus("Shared"); toast.success(`Document shared with ${shareEmail}`);
-    } catch(e:any){ toast.error(e.message); }
-    finally { setIsSharing(false); }
-  }
+
   async function remove(){
     if(!confirm("Delete this document permanently?"))return;
     try{await api(`/api/documents/${id}`,{method:"DELETE"}); toast.success("Document deleted"); router.push("/dashboard");}catch(e:any){setError(e.message); toast.error(e.message);}
@@ -86,7 +76,6 @@ export default function Editor({ id }: { id:string }) {
         </span>
         {doc?.access?.canEdit && <button className="button" disabled={isSaving} onClick={()=>save(title.trim(), editor?.getJSON())}><Save size={16}/> {isSaving ? "Saving..." : "Save"}</button>}
         {doc?.access?.isOwner&&<>
-          <button className="primary" onClick={()=>setShareOpen(true)}><Share2 size={16}/> Share</button>
           <button className="danger button" onClick={remove}><Trash2 size={16}/> Delete</button>
         </>}
       </div>
@@ -107,13 +96,5 @@ export default function Editor({ id }: { id:string }) {
     </div>
     
     <div className="page"><EditorContent editor={editor}/></div>
-    
-    {shareOpen&&<div className="modal-bg"><div className="modal">
-      <h2>Share “{title}”</h2>
-      <p className="muted" style={{marginTop:0}}>Grant access using an email address.</p>
-      <input type="email" placeholder="teammate@example.com" value={shareEmail} onChange={e=>setShareEmail(e.target.value)} disabled={isSharing} />
-      <select value={permission} onChange={e=>setPermission(e.target.value)} disabled={isSharing}><option value="edit">Can edit</option><option value="view">Can view</option></select>
-      <div className="modal-actions"><button className="button" disabled={isSharing} onClick={()=>setShareOpen(false)}>Cancel</button><button className="primary button" disabled={isSharing} onClick={share}>{isSharing ? "Sharing..." : "Share"}</button></div>
-    </div></div>}
   </main>
 }

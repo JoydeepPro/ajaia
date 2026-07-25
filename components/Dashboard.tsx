@@ -37,13 +37,13 @@ export default function Dashboard({ userId, email }: { userId:string; email:stri
     reader.readAsText(file);
   }
 
-  const owned=docs.filter(d=>d.ownerId===userId), shared=docs.filter(d=>d.ownerId!==userId);
+  const owned=docs.filter(d=>d.ownerId===userId);
   const section=(title:string, list:Doc[]) => <section>
     <h2>{title}</h2>
     <div className="grid">{list.length ? list.map(d=><button className="doc-card" key={d._id} onClick={()=>router.push(`/documents/${d._id}`)}>
       <div className="icon-wrapper"><FileText size={24} /></div>
       <strong>{d.title}</strong>
-      <span>{d.ownerId===userId?"Owned by you":`Shared by ${d.ownerEmail}`}</span>
+      <span>Owned by you</span>
       <small><Clock size={12} style={{display:'inline', marginRight:'4px', verticalAlign:'middle'}}/> Updated {new Date(d.updatedAt).toLocaleString()}</small>
     </button>) : <div className="empty">No documents here yet.</div>}</div>
   </section>;
@@ -53,14 +53,13 @@ export default function Dashboard({ userId, email }: { userId:string; email:stri
       <div><span className="brand">Ajaia Docs</span><span className="muted user-email">{email}</span></div>
     </header>
     <div className="hero">
-      <div><h1>Your documents</h1><p className="muted">Create, import, edit and share documents seamlessly.</p></div>
+      <div><h1>Your documents</h1><p className="muted">Create, import, edit and manage documents seamlessly.</p></div>
       <div className="actions">
         <label className="button"><Upload size={18}/> Import .txt / .md<input hidden type="file" accept=".txt,.md,text/plain,text/markdown" onChange={e=>importFile(e.target.files?.[0])}/></label>
         <button className="primary" onClick={()=>create()}><Plus size={18}/> New document</button>
       </div>
     </div>
     {error&&<p className="error banner">{error}</p>}
-    {section("Owned by me",owned)}
-    {section("Shared with me",shared)}
+    {section("My Documents",owned)}
   </main>
 }
